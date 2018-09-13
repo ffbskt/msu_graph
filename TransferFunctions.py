@@ -112,6 +112,7 @@ class Basketball_rules(AnketeAnswers):
     def prepare_df(self):
         self.df = self.safe_load(self.col_list)
         self.df.rename(columns=self.col_to_rename, inplace=True)
+        self.df = self.df[self.df.key != '']
         self.df['key'] = self.df['key'].apply(self.mail_hesh)
         self.df['key'] = self.df['key'].apply(str)  # int to long for google docs
         self.df['cource'] = self.df['group'].apply(self.get_cource)
@@ -123,6 +124,7 @@ class Basketball_rules(AnketeAnswers):
 
 
 if __name__ == '__main__':
+    util.read_sheet(name='ch2')
     # Open basketball form and get omly 'cl' columns. change names and df ready to sync.
     cl = [1, 2, 3, 4, 5, 6, 7, 8]
     br = Basketball_rules('1cWN-sMoaV_5NjWTcjryRx-6uxi29K9KaWt5vHa9vQog')

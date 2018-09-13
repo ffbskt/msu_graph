@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 
 
-def read_sheet(key=None, name=None, pygsheet=pygsheets.authorize(outh_file='other.json')): #GoogleDrivePermision)):
+def read_sheet(key=None, name=None, pygsheet=pygsheets.authorize(outh_file=GoogleDrivePermision)):
     assert not (key is None and name is None), 'Add key or name'
     if name is None:
         sheet = pygsheet.open_by_key(key)
