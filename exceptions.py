@@ -1,0 +1,1 @@
+EXEPT = {'Wrong command': 'use only two spaces Faculty action args(with "_" ) '}
