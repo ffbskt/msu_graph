@@ -6,4 +6,5 @@ __pycache__/
 .idea/modules.xml
 .idea/workspace.xml
 sheets.googleapis.com-python.json
-
+EmailPassLog
+GoogleDrivePermision.json
