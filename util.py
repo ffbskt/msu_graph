@@ -1,12 +1,12 @@
 import pygsheets
 import pandas as pd
-from keys import GoogleDrivePermision
+#from keys import GoogleDrivePermision
 import re
 from datetime import datetime, timedelta
 import numpy as np
 
 
-def read_sheet(key=None, name=None, pygsheet=pygsheets.authorize(outh_file=GoogleDrivePermision)):
+def read_sheet(key=None, name=None, pygsheet=pygsheets.authorize(outh_file="/GoogleDrivePermision.json")):
     assert not (key is None and name is None), 'Add key or name'
     if name is None:
         sheet = pygsheet.open_by_key(key)
@@ -411,8 +411,9 @@ def sun_compute_distant(a, b):
     return dst
 
 if __name__ == "__main__":
-    pass
-    #wks = read_sheet('19FRWh10ZAkM0vX620Clq9UOPJD1M90WccgJWKqov5Kk')
+    #wks = read_sheet('1kxwvaWNYHSCzD4LiTBg5vGDHFBmBrrjpnIpuqrgfzlw')
+    #print('key' in wks.get_as_df().columns)
+    print(get_dates(9, 3, 7))
     #print(wks.get_as_df().head())
     #transfer(wks, col_name=['Секция', 'Факультет'], new_col_name=['Перевод', 'Факультет'],
     #         key_val=['Тест Т Т',	'0'], key_col=['ФИО', 'Группа']

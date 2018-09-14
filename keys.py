@@ -5,8 +5,8 @@ Load file from parent directory. Named GoogleDrivePermision.json and EmailPassLo
 import os.path
 import json
 
-GoogleDrivePermision = os.path.dirname(__file__) + '/../GoogleDrivePermision.json'
-file = open(os.path.dirname(__file__) + '/../EmailPassLog')
+GoogleDrivePermision = os.path.dirname(__file__) + '/GoogleDrivePermision.json'
+file = open(os.path.dirname(__file__) + '/EmailPassLog')
 EmailPassLog = json.loads(file.read())
 
 if __name__ == "__main__":
