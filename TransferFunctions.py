@@ -127,8 +127,8 @@ class BasketballBlock():
     pass
 
 class BasketballResults(AnketeAnswers):
-    def __init__(self, key): # form answers
-        super().__init__(key=key)
+    def __init__(self, full_form_key, curent_form_key=None): # form answers #curent_form_key where insert points
+        super().__init__(key=full_form_key)
         self.col_to_rename = {"Email Address": 'ref1',
                               "Ещё судьи, почты через пробел": 'ref23',  # emeil hash
                               "Факультет и курс": 'faculty',  # transform to int
@@ -137,6 +137,11 @@ class BasketballResults(AnketeAnswers):
 
     def add_points(self):
         pass
+    
+    def get_df(self):
+        self.df = self.safe_load(range(1,11))
+        self.df.rename(columns=self.col_to_rename, inplace=True)
+        return self.df 
 
 
 if __name__ == '__main__':
