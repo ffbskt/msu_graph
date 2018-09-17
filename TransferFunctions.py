@@ -139,7 +139,7 @@ class BasketballResults(AnketeAnswers):
         pass
     
     def get_df(self):
-        self.df = self.safe_load(range(1,11))
+        self.df = self.safe_load(range(1,13)) # 13 - all no empty col
         self.df.rename(columns=self.col_to_rename, inplace=True)
         return self.df 
 
