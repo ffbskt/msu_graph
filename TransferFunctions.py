@@ -153,12 +153,12 @@ if __name__ == '__main__':
     br.prepare_df()
 
     # Get people with propertys and sync with existans
-    br.filter_people(('Физифак', '2'))#('Физифак', '2'))
+    br.filter_people(('Химфак', '2'))#('Физифак', '2'))#
     br.filter_people(key_value=[MIN_TEST_VAL,], key_column=['test_rool'], ratio=">")
     if 0: #if create new df with dates
         br.add_column_to_df(cur_col=br.cur_col, new_col=util.get_dates(9, 3, 7)) #how much days ago was saturday?
         br.add_
-    br.update_or_create_from_Rool_Test('ph2') #ph2
+    br.update_or_create_from_Rool_Test('ch2') #ph2
 
 
 

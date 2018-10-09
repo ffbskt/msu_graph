@@ -231,6 +231,12 @@ if __name__ == "__main__":
 
 
 
-    g = GDrive(sheet_id='1cWN-sMoaV_5NjWTcjryRx-6uxi29K9KaWt5vHa9vQog',
-               graph='1at8ivfcSDq3W_LFdwzFqVuYfQ27c18Ka-F1Cpen844g'
-               )
+    #g = GDrive(sheet_id='1cWN-sMoaV_5NjWTcjryRx-6uxi29K9KaWt5vHa9vQog',
+    #           graph='1at8ivfcSDq3W_LFdwzFqVuYfQ27c18Ka-F1Cpen844g'
+    #           )
+    
+    g = GDrive(sheet_id='1pWKKo-zDPeKzt9aNdGAx3qh5zMFkqE7D2r6Fr8z_tLM',
+               graph='1led4JXV6IWNxmvYKsXaV_CCsQkAHsIyPqBgDvkrj0kE')
+    g.generate(category=["В какой учебной группе вы хотели  бы посещать занятия по физической культуре"], keys=["Фамилия", "Имя", "Отчество"],
+                   current_folder='1IKEAsUHu_BjWu2fX3g3yyt89u7QAU5Cs',)
+                   #graph_wks=util.read_sheet('1ZR38L8tFMdUTODVQ0cdz79jPKX4xpNn7R11S82u5Jyk'))
