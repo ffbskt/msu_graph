@@ -2,6 +2,7 @@ import pygsheets
 import pandas as pd
 import util
 import random
+import datetime
 import hashlib
 import PandasForm, SyncGraph
 
@@ -46,8 +47,21 @@ class AnketeAnswers:
         :return: None - inplace update df
         """
         self.df = util.get_row_by_keys(self.df, key_value, key_column, ratio=ratio)
-
+    
+    def add_date(self, dates = util.get_dates(3,3,7)):
+        col_name=['key', 'suname', 'test_rool', 'group']
+        df2 = pd.DataFrame(
+            [[''] * len(dates)], 
+            index=self.df.index, 
+            columns=dates
+        )
+        self.df = pd.concat([self.df[col_name], df2], axis=1)
+        
+            
+    
     def score_to_int(self, sc_val):
+        if sc_val == "":
+            return 0
         return int(sc_val.split('/')[0])
 
     def mail_hesh(self, mail):
@@ -55,7 +69,9 @@ class AnketeAnswers:
 
     def get_cource(self, group_number):
         if group_number:
-            return str(group_number[0])
+            for letter in str(group_number):
+                if letter.isdigit():
+                    return str(letter)           
         return ''
 
 
@@ -118,31 +134,105 @@ class Basketball_rules(AnketeAnswers):
         self.df['cource'] = self.df['group'].apply(self.get_cource)
         self.df['test_rool'] = self.df['test_rool'].apply(self.score_to_int)
         self.df['test_points'] = self.df['test_rool'].apply(lambda x: x - self.test_norm_points)
+    
+    def filter_participants(self, key_value=['Физифак', '1'], 
+                            key_column=['Факультет','cource']):
+        self.filter_people(key_value, key_column)
+        self.filter_people([self.test_norm_points], ['test_rool'], ratio=">")
+        
+        
 
     def get_df(self):
         return self.df
 
 
-class BasketballBlock():
-    pass
+class BasketballBlock(AnketeAnswers):
+    def __init__(self, block_key):
+        super().__init__(key=block_key)
+        
+    def get_test_res(self, ratio='25', col_name="Block1"):
+        self.res_df = self.safe_transfer_to_pd_by_col(self.wks, [1,2,3])
+        self.res_df["key"] = self.res_df["Email Address"].apply(self.mail_hesh)
+        self.res_df["Block1"] = self.res_df["Score"].apply(self.score_to_int)
+        self.res_df = util.get_row_by_keys(self.res_df, [ratio,], ['Block1'], ratio=">")
+        
+    def add_col(self, dest_form_key, col_name="Block1", ind=7):
+        self.colname = col_name
+        self.dest_wks = self.pg.open_by_key(dest_form_key)
+        assert not (self.colname in self.dest_wks.sheet1.get_as_df()), "already have col"
+        self.dest_wks.sheet1.insert_cols(ind, values=[self.colname])
+        
+    def add_results(self, dest_form_key):
+        args = {"to_key_colname": ["key",], 
+            "to_values_colname": [self.colname],            
+           }
+        wks = self.pg.open_by_key(dest_form_key)
+        util.sync_by_colname(from_wks=self.res_df, to_wks=wks.sheet1, **args)
 
 class BasketballResults(AnketeAnswers):
-    def __init__(self, full_form_key, curent_form_key=None): # form answers #curent_form_key where insert points
-        super().__init__(key=full_form_key)
-        self.col_to_rename = {"Email Address": 'ref1',
-                              "Ещё судьи, почты через пробел": 'ref23',  # emeil hash
-                              "Факультет и курс": 'faculty',  # transform to int
-                              }
-
-
-    def add_points(self):
-        pass
+    def __init__(self, res_form_key, dest_form_key): # form answers #curent_form_key where insert points
+        super().__init__(key=res_form_key)
+        self.res_form_key = res_form_key
+        self.dest_wks = self.pg.open_by_key(dest_form_key)
+        self.dest_df = self.dest_wks.sheet1.get_as_df()
+        self.todaydate = datetime.datetime.now().strftime("%m-%d")
+        self.tomorow = self.dest_df.columns[
+            self.dest_df.columns.get_loc(self.todaydate) + 1]
+        self.today_col_ind = self.dest_df.columns.get_loc(
+            self.todaydate)
+        
+    def gen_teams(self, numbers=3):
+        players_count = sum(
+            [int(s or 0) for s in self.dest_df[self.todaydate]])
+        if players_count % numbers == 0:
+            teams_count = players_count // numbers - 1
+        else:
+            teams_count = players_count // numbers
+        
+        team_names = "abcdefghigklmnopq"
+        players_count / numbers
+        team_list = []
+        for i in team_names[:teams_count]:
+            team_list.extend(list(i * numbers))
+        team_list.extend(list('R' * (players_count % numbers or numbers)))
+        random.shuffle(team_list)
+        i = 0
+        for ind, v in enumerate(self.dest_df[self.todaydate]):
+            if v:
+                self.dest_df[self.tomorow][ind] = team_list[i]
+                i += 1
+        self.dest_wks.sheet1.update_col(
+            index=self.today_col_ind + 2,
+            row_offset=1,values=self.dest_df[self.tomorow].values.tolist())
+        
+    def add_results_points(self, fac_id):
+        self.res_df = self.wks.get_as_df()
+        for ind, line in self.res_df.iterrows():
+            if not line['counted'] and fac_id[line['Faculty']]:
+                print(ind)
+                self.wks.update_cell((ind + 2, self.res_df.columns.get_loc('counted') + 1), val=1)
+                self.dest_wks = self.pg.open_by_key(fac_id[line['Faculty']])
+                df = self.dest_wks.sheet1.get_as_df()
+                for col in range(5,9):
+                    if line[col] != '':
+                        for ind, t_key in enumerate(line[col]):
+                            #print(t_key, line['Faculty'])
+                            fv = round(0.1 *(4.3 - ind) ** 1.4, 2) + 0.001 * 0.1 ** ind
+                            self.add_to_colA_if_colB(df, 
+                                                colA=self.todaydate, 
+                                                colB=self.tomorow, 
+                                                cond=t_key, val=fv)
+                            #print(line['Faculty'], t_key, fv)
+                #print('k', df[['suname', self.todaydate]][:8])
+                #add remove teams ? ? 
+                self.dest_wks.sheet1.update_col(index=self.today_col_ind + 1,
+                                                row_offset=1,
+                                                values=df[self.todaydate].values.tolist())
+                
+    def add_to_colA_if_colB(self, df, colA, colB, cond='a', val=0.3):
+        df.loc[df[df[colB] == cond].index, colA] += val
     
-    def get_df(self):
-        self.df = self.safe_load(range(1,13)) # 13 - all no empty col
-        self.df.rename(columns=self.col_to_rename, inplace=True)
-        return self.df 
-
+    
 
 if __name__ == '__main__':
     #util.read_sheet(name='ch2')

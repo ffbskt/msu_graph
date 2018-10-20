@@ -2,6 +2,8 @@ import util
 import pandas as pd
 import re
 import pygsheets
+import hashlib
+import datetime
 
 class SheetCreator: # refactor! its sheet creator
     """
@@ -119,8 +121,45 @@ class StandartFormLibrary:
         self.formulas = ['','','=ROUND(D{}/MAX(D2:D101) * 100)', '=SUM(H{}:ZZ{})', '=D{}*3+F{}+G{}','','']
         self.formulas.extend([''] * (len(self.header1) - len(self.formulas)))
 
+def open_protected_today(key, pg):
+    
+    wks = util.read_sheet(key)
+    df = wks.get_as_df()
+    col = datetime.datetime.now().strftime("%m-%d")
+    ind = df.columns.get_loc(col)
+    
+    #delete protected range
+    request = {
+              "deleteProtectedRange": {
+                "protectedRangeId": 1,
+              }
+            }
+    try:
+        pg.sh_batch_update(key, request, None, False)
+    except:
+        pass
+    #set new range
+    gridrange = {
+      "sheetId": 0,
+      "startRowIndex": 0,
+      "endRowIndex": 50,
+      "startColumnIndex": 0,
+      "endColumnIndex": ind,
+    }
+    editors = {
+      "users": [
+        "ffbskt@gmail.com",
+      ]      
+    }
+    request = {"addProtectedRange": {
+                "protectedRange": {
+                "protectedRangeId": 1,
+                "range": gridrange,
+                "editors": editors
+            },
 
-
+        }}
+    pg.sh_batch_update(key, request, None, False)
 
 
 if __name__ == "__main__":

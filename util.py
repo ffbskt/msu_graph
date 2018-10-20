@@ -15,6 +15,34 @@ def read_sheet(key=None, name=None, pygsheet=pygsheets.authorize(outh_file="/Goo
     return sheet.sheet1
 
 def search_id_in_list(list_sheets, name):
+    """
+       find id with name in list_sheet=c.list_ssheets(folder_id)
+    """
+    for sheet in list_sheets:
+        if sheet['name'] == name:
+            return sheet['id']
+    return None
+
+
+def safe_transfer_to_pd_by_col(wks, col_list):
+    """
+        take col one by one and create pd dataframe (more stable then get_as_df)
+        col_list = [1, 2, 6...]
+    """ 
+    df = pd.DataFrame()
+    for col in col_list:
+        
+        full_col = wks.get_col(col, include_empty=False)
+        #print(col, full_col, full_col[0], len(full_col), df.shape[0])
+        diff_coll = df.shape[0] - len(full_col) + 1
+        if diff_coll > 0: 
+            for i in range(diff_coll):
+                full_col.append('')
+            
+        df[full_col[0]] = full_col[1:]
+    return df
+
+def search_id_in_list(list_sheets, name):
     for sheet in list_sheets:
         if sheet['name'] == name:
             return sheet['id']
@@ -409,6 +437,8 @@ def sun_compute_distant(a, b):
         if alist[0] == b.split()[0]:
             return 1.0
     return dst
+
+
 
 if __name__ == "__main__":
     #wks = read_sheet('1kxwvaWNYHSCzD4LiTBg5vGDHFBmBrrjpnIpuqrgfzlw')
